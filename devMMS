@@ -1,0 +1,5 @@
+#!/bin/bash
+
+mv restRoja.pro.user roja.pro.user
+~/Dev/Qt/QtCreator/bin/qtcreator
+mv roja.pro.user restRoja.pro.user

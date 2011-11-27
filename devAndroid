@@ -1,0 +1,5 @@
+#!/bin/bash
+
+mv androidRoja.pro.user roja.pro.user
+~/Dev/Necessitas/QtCreator/bin/necessitas 
+mv roja.pro.user androidRoja.pro.user
