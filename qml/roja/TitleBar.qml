@@ -2,6 +2,7 @@ import Qt 4.7
 
 Rectangle {
     property string text
+    property int textPointSize : 7
 
     id: titleBar
     width: parent.width
@@ -16,10 +17,10 @@ Rectangle {
     Text {
         id: titleBarText
         text: parent.text
-        font.pointSize: 7
+        font.pointSize: textPointSize
         font.bold: true
         color: "#FFFFFF"
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.verticalCenter: parent.verticalCenter
+        anchors.centerIn: parent
+        textFormat: Text.RichText
     }
 }

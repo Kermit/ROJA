@@ -1,14 +1,64 @@
 # Add more folders to ship with the application, here
 QMLfiles.source = qml/roja
 QMLfiles.target = qml
-DEPLOYMENTFOLDERS = QMLfiles
+
+ContentFiles.source = content/roja
+ContentFiles.target = content
+
+DEPLOYMENTFOLDERS += QMLfiles \
+ContentFiles
 
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)
 qtcAddDeployment()
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    src/model/rojamodel.cpp \
+    src/rojadatabase.cpp \
+    src/mainwindow.cpp \
+    src/lines.cpp \
+    src/model/linesmodel.cpp \
+    src/model/linesitem.cpp \
+    src/model/stopsitem.cpp \
+    src/model/stopsmodel.cpp \
+    src/stops.cpp \
+    src/favs.cpp \
+    src/page.cpp \
+    src/model/linesstopsitem.cpp \
+    src/model/linesstopsmodel.cpp \
+    src/model/linesdetailsitem.cpp \
+    src/model/linesdetailsmodel.cpp \
+    src/timetable.cpp \
+    src/routes.cpp \
+    src/routeoptions.cpp \
+    src/model/routesitem.cpp \
+    src/model/routesmodel.cpp
+
 RESOURCES += common.qrc
+
+HEADERS += \
+    src/model/rojamodel.h \
+    src/rojadatabase.h \
+    src/mainwindow.h \
+    src/lines.h \
+    src/model/linesmodel.h \
+    src/model/linesitem.h \
+    src/model/stopsitem.h \
+    src/model/stopsmodel.h \
+    src/stops.h \
+    src/favs.h \
+    src/page.h \
+    src/model/linesstopsitem.h \
+    src/model/linesstopsmodel.h \
+    src/model/linesdetailsitem.h \
+    src/model/linesdetailsmodel.h \
+    src/timetable.h \
+    src/routes.h \
+    src/routeoptions.h \
+    src/model/routesitem.h \
+    src/model/routesmodel.h
+
+QT += sql network
 
 android {
 OTHER_FILES += \
@@ -91,8 +141,51 @@ OTHER_FILES += \
     qtc_packaging/debian_fremantle/changelog
 }
 
-RESOURCES += \
-    common.qrc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

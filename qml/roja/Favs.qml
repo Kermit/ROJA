@@ -19,148 +19,69 @@ Rectangle {
 
         anchors.top: favsTitleBar.bottom
 
-        Rectangle {
+        FavButton {
             id: favRoutes
-            width: parent.width
-            height: Math.round(parent.height * 0.1)
-            color: "#111111"
-            state: "hide"
+            text: "Trasy - x ulubionych"
 
-            anchors.top: parent.top
-
-            Text {
-                text: "Trasy - 0 ulubionych"
-                font.bold: true
-                font.pointSize: 6
-                color: "#FFFFFF"
-
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.left: parent.left
-                anchors.leftMargin: 5
-            }
+            anchors.top: favsContent.top
 
             MouseArea {
+                id: favRoutesMA
                 anchors.fill: parent
                 onClicked:
                     if (favRoutes.state == "hide") {
                         favRoutes.state = "show";
                         favStops.state = "hide";
                         favLines.state = "hide";
+
+                        favStops.anchors.topMargin = 0;
+                        favLines.anchors.topMargin = 1;
                     }
             }
-
-            states: [
-                State {
-                    name: "show"
-                    PropertyChanges {
-                        target: favRoutes;
-                        height: Math.round(favsContent.height - (Math.round(favsContent.height * 0.1) * 2))
-                    }
-                },
-                State {
-                    name: "hide"
-                    PropertyChanges {
-                        target: favRoutes;
-                        height: Math.round(favsContent.height * 0.1)
-                    }
-                }
-            ]
         }
 
-        Rectangle {
-            id: favLines
-            width: parent.width
-            height: Math.round(parent.height * 0.1)
-            color: "#111111"
-            state: "hide"
+        FavButton {
+            id: favStops
+            text: "Przystanki - x ulubionych"
 
             anchors.top: favRoutes.bottom
-
-            Text {
-                text: "Trasy - 0 ulubionych"
-                font.bold: true
-                font.pointSize: 6
-                color: "#FFFFFF"
-
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.left: parent.left
-                anchors.leftMargin: 5
-            }
+            anchors.topMargin: 1
 
             MouseArea {
-                anchors.fill: parent
-                onClicked:
-                    if (favLines.state == "hide") {
-                        favLines.state = "show";
-                        favStops.state = "hide";
-                        favRoutes.state = "hide";
-                    }
-            }
-
-            states: [
-                State {
-                    name: "show"
-                    PropertyChanges {
-                        target: favLines;
-                        height: Math.round(favsContent.height - (Math.round(favsContent.height * 0.1) * 2))
-                    }
-                },
-                State {
-                    name: "hide"
-                    PropertyChanges {
-                        target: favLines;
-                        height: Math.round(favsContent.height * 0.1)
-                    }
-                }
-            ]
-        }
-
-        Rectangle {
-            id: favStops
-            width: parent.width
-            height: Math.round(parent.height * 0.1)
-            color: "#111111"
-            state: "hide"
-
-            anchors.top: favLines.bottom
-
-            Text {
-                text: "Trasy - 0 ulubionych"
-                font.bold: true
-                font.pointSize: 6
-                color: "#FFFFFF"
-
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.left: parent.left
-                anchors.leftMargin: 5
-            }
-
-            MouseArea {
+                id: favStopsMA
                 anchors.fill: parent
                 onClicked:
                     if (favStops.state == "hide") {
                         favStops.state = "show";
                         favRoutes.state = "hide";
                         favLines.state = "hide";
+
+                        favLines.anchors.topMargin = 0;
+                        favStops.anchors.topMargin = 1;
                     }
             }
+        }
 
-            states: [
-                State {
-                    name: "show"
-                    PropertyChanges {
-                        target: favStops;
-                        height: Math.round(favsContent.height - (Math.round(favsContent.height * 0.1) * 2))
+        FavButton {
+            id: favLines
+            text: "Linie - x ulubionych"
+
+            anchors.top: favStops.bottom
+            anchors.topMargin: 1
+
+            MouseArea {
+                id: favLinesMA
+                anchors.fill: parent
+                onClicked:
+                    if (favLines.state == "hide") {
+                        favLines.state = "show";
+                        favRoutes.state = "hide";
+                        favStops.state = "hide";
+
+                        favStops.anchors.topMargin = 1;
+                        favLines.anchors.topMargin = 1;
                     }
-                },
-                State {
-                    name: "hide"
-                    PropertyChanges {
-                        target: favStops;
-                        height: Math.round(favsContent.height * 0.1)
-                    }
-                }
-            ]
+            }
         }
     }
 }
