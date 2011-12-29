@@ -1,2 +1,2 @@
-android/bin/
-android/assets/
+android/bin/*
+android/assets/*
