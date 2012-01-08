@@ -56,9 +56,11 @@ private:
     RoutesModel *routesModel;
     RoutesModel *routesDetailsModel;
     Timetable *timetable;
+    QSqlQuery *frGetNextStopID;
     QSqlQuery *frCheckNextStop;
     QSqlQuery *frGetAllOptions;
-    QSqlQuery *srCheckRoute;
+    QSqlQuery *csrGetAllLines;
+    QSqlQuery *csrCheckRoute;
 
     bool startStopStatus;
     QString startStopName;
@@ -67,11 +69,15 @@ private:
     int endStopID;
     QMap<int, QString> routeList;
 
+    QList<int> ok;
+    QList<int> nok;
+    QMap<int, QString> okMap;
     QElapsedTimer tZapytanie;
     QElapsedTimer tSzukanieStraight;
 
     void init();
     void getStopsList(QString filter);    
+    bool checkStraightRoute(RouteOptions &routeOptions, QString line);
     bool findStraightRoute(int startID, int stopID, int checkLineID, int checkRouteID, QString line);
     void findRoute(int przesiadki, RouteOptions &opt, QString line);
     void startSearching();

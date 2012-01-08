@@ -2,11 +2,7 @@
 QMLfiles.source = qml/roja
 QMLfiles.target = qml
 
-ContentFiles.source = content/roja
-ContentFiles.target = content
-
-DEPLOYMENTFOLDERS += QMLfiles \
-ContentFiles
+DEPLOYMENTFOLDERS += QMLfiles
 
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)
@@ -32,7 +28,8 @@ SOURCES += main.cpp \
     src/routes.cpp \
     src/routeoptions.cpp \
     src/model/routesitem.cpp \
-    src/model/routesmodel.cpp
+    src/model/routesmodel.cpp \
+    src/common.cpp
 
 RESOURCES += common.qrc
 
@@ -56,7 +53,8 @@ HEADERS += \
     src/routes.h \
     src/routeoptions.h \
     src/model/routesitem.h \
-    src/model/routesmodel.h
+    src/model/routesmodel.h \
+    src/common.h
 
 QT += sql network
 
@@ -140,6 +138,8 @@ OTHER_FILES += \
     qtc_packaging/debian_fremantle/compat \
     qtc_packaging/debian_fremantle/changelog
 }
+
+
 
 
 

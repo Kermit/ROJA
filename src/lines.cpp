@@ -32,8 +32,8 @@ void Lines::init()
 {
     QDeclarativeContext *ss = viewer->rootContext();
     viewer->rootContext()->setContextProperty("linesModel",  model);
-viewer->rootContext()->setContextProperty("linesStopsModel",  stopsModel);
-viewer->rootContext()->setContextProperty("linesTimetableModel", timetable->getModel());
+    viewer->rootContext()->setContextProperty("linesStopsModel",  stopsModel);
+    viewer->rootContext()->setContextProperty("linesTimetableModel", timetable->getModel());
 
     linesLoader = viewer->rootObject()->findChild<QDeclarativeItem *>("linesLoader");
     linesLoader->setProperty("source", "qml/roja/Lines.qml");
@@ -110,14 +110,13 @@ void Lines::getData(QString filter)
 
 void Lines::lineRowClicked(int lineID, int routeID, QString lineNumber, QString lineWayName)
 {    
-    //stopsModel = new LinesStopsModel(this);
+    searchLine->setProperty("state", "hide");
     getStopsListData(lineID, routeID);
 
-    //viewer->rootContext()->setContextProperty("linesStopsModel",  stopsModel);
     linesStopsLoader->setProperty("source", "qml/roja/LinesStops.qml");
 
     linesSection->setProperty("page", "StopsList");
-    backButton->setProperty("visible", true);
+    backButton->setProperty("visible", true);   
 
     currentLineNumber = lineNumber;
     currentWayName = lineWayName;
@@ -190,16 +189,7 @@ void Lines::getStopsListData(int lineID, int routeID)
 
 void Lines::lineStopRowClicked(int lineID, int routeID, int stopID, QString stopName, int routesDetailsID)
 {
-    QElapsedTimer time;
-    time.start();
-    //Timetable timetable;
     timetable->getData(stopID, lineID, routeID, routesDetailsID);
-//    detailsModel = timetable.getModel();
-    qDebug() << "Tworzenie rozkladu: " << time.elapsed();
-
-    time.start();
-//    viewer->rootContext()->setContextProperty("timetableModel", detailsModel);
-    //linesDetailsLoader->setProperty("source", "qml/roja/Timetable.qml");
 
     linesSection->setProperty("page", "Timetable");
     backButton->setProperty("visible", true);
@@ -209,7 +199,6 @@ void Lines::lineStopRowClicked(int lineID, int routeID, int stopID, QString stop
 
     linesStopsContent->setProperty("visible", false);
     linesDetailsContent->setProperty("visible", true);
-    qDebug() << "Ustawianie: " << time.elapsed();
 }
 
 void Lines::backButtonClicked(QString page)
@@ -234,7 +223,6 @@ void Lines::backButtonClicked(QString page)
         linesDetailsContent->setProperty("visible", false);
         linesStopsContent->setProperty("visible", true);
 
-        //linesDetailsLoader->setProperty("source", "");
         linesSection->setProperty("page", "StopsList");
         linesTitleBar->setProperty("text", currentLineNumber + " " + currentWayName);
     }

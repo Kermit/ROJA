@@ -103,6 +103,7 @@ void Stops::getData(QString text)
 
 void Stops::stopClicked(QString stopName, int stopID)
 {
+    searchLine->setProperty("state", "hide");
     currentStop = stopName;
     getStopsLinesData(stopID);
     stopsLinesLoader->setProperty("source", "qml/roja/StopsLines.qml");
@@ -129,9 +130,6 @@ void Stops::stopClicked(QString stopName, int stopID)
 
 void Stops::getStopsLinesData(int stopID)
 {
-    QElapsedTimer time;
-    time.start();
-
     QString queryString("SELECT lines.number AS lineNumber, routesdetails.id AS routedetailID,"
                         " stops.name AS stopName FROM ((routesdetails INNER JOIN lines ON routesdetails.lineID = lines.id)"
                         " INNER JOIN routes ON routesdetails.routeID = routes.id) INNER JOIN stops ON"
@@ -154,8 +152,6 @@ void Stops::getStopsLinesData(int stopID)
 
         stopsLinesModel->addLine(LinesItem(0, number, routeDetailsID, stopName));
     }
-
-    qDebug() << time.elapsed();
 }
 
 void Stops::backButtonClicked(QString page)

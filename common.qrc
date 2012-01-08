@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>images/titleBarBackground.png</file>
+        <file>images/backIcon.png</file>
+        <file>images/lupaIcon.png</file>
     </qresource>
 </RCC>

@@ -8,6 +8,7 @@
 #include "src/model/routesmodel.h"
 #include "src/timetable.h"
 #include "src/rojadatabase.h"
+#include "src/common.h"
 
 #include <QDebug>
 #include <QElapsedTimer>
@@ -39,6 +40,7 @@ void Routes::init()
     routesLoader = viewer->rootObject()->findChild<QDeclarativeItem *>("routesLoader");
     routesLoader->setProperty("source", "qml/roja/Routes.qml");
     communicateText = viewer->rootObject()->findChild<QDeclarativeItem *>("communicateText");
+    routesTitleBar = viewer->rootObject()->findChild<QDeclarativeItem *>("routesTitleBar");
 
     routesBox = viewer->rootObject()->findChild<QDeclarativeItem *>("routesBox");
 
@@ -92,6 +94,7 @@ void Routes::chooseStopClicked(bool startStop)
     startStopStatus = startStop;
     getStopsList("");
 
+    routesTitleBar->setProperty("text", "Wybierz przystanek");
     routesBox->setProperty("page", "ChooseStop");
     routesBackButton->setProperty("visible", true);
     chooseStopSearchButton->setProperty("visible", true);
@@ -139,6 +142,7 @@ void Routes::routesBackButtonClicked(QString page)
 {
     if (page == "ChooseStop")
     {
+        routesTitleBar->setProperty("text", "Wyszukiwanie tras");
         routesBox->setProperty("page", "Main");
         routesBackButton->setProperty("visible", false);
         chooseStopSearchButton->setProperty("visible", false);
@@ -153,6 +157,7 @@ void Routes::routesBackButtonClicked(QString page)
         routesBox->setProperty("page", "Main");
         routesBackButton->setProperty("visible", false);
 
+        routesTitleBar->setProperty("text", "Wyszukiwanie tras");
         searchResultsBox->setProperty("visible", false);
         searchBox->setProperty("visible", true);
         routesModel->clearData();
@@ -162,6 +167,7 @@ void Routes::routesBackButtonClicked(QString page)
     {
         routesBox->setProperty("page", "Route");
 
+        routesTitleBar->setProperty("text", "Znalezione trasy");
         searchDetailResultsBox->setVisible(false);
         searchResultsBox->setVisible(true);
     }
@@ -170,6 +176,7 @@ void Routes::routesBackButtonClicked(QString page)
     {
         routesBox->setProperty("page", "Route");
 
+        routesTitleBar->setProperty("text", "Znalezione trasy");
         routesTimetable->setVisible(false);
         searchResultsBox->setVisible(true);
     }
@@ -178,6 +185,7 @@ void Routes::routesBackButtonClicked(QString page)
     {
         routesBox->setProperty("page", "DetailRoute");
 
+        routesTitleBar->setProperty("text", QString::fromUtf8("Szczegóły trasy"));
         routesTimetable->setVisible(false);
         searchDetailResultsBox->setVisible(true);
     }
@@ -200,6 +208,7 @@ void Routes::filter(QString text)
 {
     stopsModel->clearData();
     text = text.toLower();
+    Common::convertSpecialChars(text);
     getStopsList(text);
 }
 
@@ -218,6 +227,7 @@ void Routes::chooseStopRowClicked(QString stopName, int stopID)
         endStop->setProperty("text", stopName);
     }
 
+    routesTitleBar->setProperty("text", "Wyszukiwanie tras");
     routesBox->setProperty("page", "Main");
     routesBackButton->setProperty("visible", false);
     chooseStopSearchButton->setProperty("visible", false);
@@ -247,6 +257,9 @@ void Routes::searchButtonClicked()
 
 void Routes::startSearchNow()
 {
+    QElapsedTimer t1;
+    t1.start();
+    ok.clear();
     if (!przesiadkaButton->property("przesiadka").toBool())
     {
         prepareStraightRouteQuery();
@@ -258,8 +271,10 @@ void Routes::startSearchNow()
         startSearching();
     }
 
+    qDebug() << "Czas szukania to: " << t1.elapsed();
     communicateText->setVisible(false);
     generateResult();
+    qDebug() << "Czas całkowity to: " << t1.elapsed();
 }
 
 
@@ -316,22 +331,31 @@ void Routes::startSearching()
 
 void Routes::prepareFindRouteQueries()
 {
+    frGetNextStopID = new QSqlQuery(RojaDatabase::getInstance()->getDatabase());
+    frGetNextStopID->setForwardOnly(true);
+    frGetNextStopID->prepare("SELECT stopID FROM routesdetails WHERE id = :id");
+
     frCheckNextStop = new QSqlQuery(RojaDatabase::getInstance()->getDatabase());
     frCheckNextStop->setForwardOnly(true);
-    frCheckNextStop->prepare("SELECT * FROM routesdetails WHERE lineID = :lineID AND stopID ="
-                             " (SELECT stopID FROM routesdetails WHERE id = :id) AND routeID = :routeID");
+    frCheckNextStop->prepare("SELECT id FROM routesdetails WHERE routeID = :routeID AND stopID ="
+                             " (SELECT stopID FROM routesdetails WHERE id = :id)");
 
     frGetAllOptions = new QSqlQuery(RojaDatabase::getInstance()->getDatabase());
     frGetAllOptions->setForwardOnly(true);
+//    frGetAllOptions->prepare("SELECT id, lineID, routeID, routeDetailsID, stopID FROM routesdetails"
+//                             " WHERE stopID = (SELECT stopID FROM routesdetails WHERE id = :id)"
+//                             " ORDER BY id ASC");
     frGetAllOptions->prepare("SELECT id, lineID, routeID, routeDetailsID, stopID FROM routesdetails"
-                             " WHERE stopID = (SELECT stopID FROM routesdetails WHERE id = :id)"
-                             " ORDER BY id ASC");
+                             " WHERE stopID = :stopID");
 
     prepareStraightRouteQuery();
 }
 
 void Routes::destroyFindRouteQueries()
 {
+    delete frGetNextStopID;
+    frGetNextStopID = 0;
+
     delete frCheckNextStop;
     frCheckNextStop = 0;
 
@@ -343,20 +367,26 @@ void Routes::destroyFindRouteQueries()
 
 void Routes::prepareStraightRouteQuery()
 {
-    srCheckRoute = new QSqlQuery(RojaDatabase::getInstance()->getDatabase());
-    srCheckRoute->setForwardOnly(true);
-    srCheckRoute->prepare("SELECT lines.number AS lineNumber, routesdetails.id AS routedetailID,"
-                        " stops.name AS stopName, lines.id AS lineID, routes.id AS routeID"
-                        " FROM ((routesdetails INNER JOIN lines ON routesdetails.lineID = lines.id)"
-                        " INNER JOIN routes ON routesdetails.routeID = routes.id) INNER JOIN stops ON"
-                        " routes.stopID = stops.id WHERE routesdetails.stopID = :stopID AND routesdetails.lineID = :lineID AND"
-                        " routesdetails.routeID = :routeID");
+    csrCheckRoute = new QSqlQuery(RojaDatabase::getInstance()->getDatabase());
+    csrCheckRoute->setForwardOnly(true);
+    csrCheckRoute->prepare("SELECT routesdetails.id AS routedetailID,"
+                           " stops.name AS stopName"
+                           " FROM ((routesdetails INNER JOIN lines ON routesdetails.lineID = lines.id)"
+                           " INNER JOIN routes ON routesdetails.routeID = routes.id) INNER JOIN stops ON"
+                           " routes.stopID = stops.id WHERE routesdetails.stopID = :stopID AND routesdetails.lineID = :lineID AND"
+                           " routesdetails.routeID = :routeID");
+
+    csrGetAllLines = new QSqlQuery(RojaDatabase::getInstance()->getDatabase());
+    csrGetAllLines->setForwardOnly(true);
+    csrGetAllLines->prepare("SELECT id FROM routesdetails WHERE stopID = :startID"
+                            " AND lineID = :lineID AND routeID = :routeID"
+                            " AND id < :id");
 }
 
 void Routes::destroyStraightRouteQuery()
 {
-    delete srCheckRoute;
-    srCheckRoute = 0;
+    delete csrCheckRoute;
+    csrCheckRoute = 0;
 }
 
 bool Routes::findStraightRoute(int startID, int stopID, int checkLineID, int checkRouteID, QString line)
@@ -382,18 +412,7 @@ bool Routes::findStraightRoute(int startID, int stopID, int checkLineID, int che
     int id;
     int lineID;
     int routeID;
-
-    int secondIDColumn;
-    int secondLineNumberColumn;
-    int secondStopNameColumn;
-    int secondLineIDColumn;
-    int secondRouteIDColumn;
-
     int secondID;
-    QString lineNumber;
-    QString stopName;
-    int secondLineID;
-    int secondRouteID;
 
     while (query.next())
     {
@@ -401,30 +420,20 @@ bool Routes::findStraightRoute(int startID, int stopID, int checkLineID, int che
         lineID = query.value(lineIDColumn).toInt();
         routeID = query.value(routeIDColumn).toInt();
 
-        srCheckRoute->bindValue(":stopID", stopID);
-        srCheckRoute->bindValue(":lineID", lineID);
-        srCheckRoute->bindValue(":routeID", routeID);
-        srCheckRoute->exec();
+        csrCheckRoute->bindValue(":stopID", stopID);
+        csrCheckRoute->bindValue(":lineID", lineID);
+        csrCheckRoute->bindValue(":routeID", routeID);
+        csrCheckRoute->exec();
 
-        secondIDColumn = srCheckRoute->record().indexOf("routedetailID");
-        secondLineNumberColumn = srCheckRoute->record().indexOf("lineNumber");
-        secondStopNameColumn = srCheckRoute->record().indexOf("stopName");
-        secondLineIDColumn = srCheckRoute->record().indexOf("lineID");
-        secondRouteIDColumn = srCheckRoute->record().indexOf("routeID");
-
-        if (srCheckRoute->next())
+        if (csrCheckRoute->next())
         {
-            secondID = srCheckRoute->value(secondIDColumn).toInt();
+            secondID = csrCheckRoute->record().value("routedetailID").toInt();
             if (secondID < id)
                 continue;
 
-            lineNumber = srCheckRoute->value(secondLineNumberColumn).toString();
-            stopName = srCheckRoute->value(secondStopNameColumn).toString();
-            secondLineID = srCheckRoute->value(secondLineIDColumn).toInt();
-            secondRouteID = srCheckRoute->value(secondRouteIDColumn).toInt();
-
             result = true;
-            QString resultString = QString(QString::number(secondLineID) + "->" + QString::number(secondRouteID));
+            QString resultString = QString(QString::number(lineID) + "->" + QString::number(routeID));
+            okMap.insert(routeID, resultString);
             routeList.insert(routeList.count(), line + resultString);
         }
     }
@@ -432,18 +441,47 @@ bool Routes::findStraightRoute(int startID, int stopID, int checkLineID, int che
     return result;
 }
 
+bool Routes::checkStraightRoute(RouteOptions &routeOptions, QString line)
+{
+    bool result = false;
+    csrCheckRoute->bindValue(":stopID", endStopID);
+    csrCheckRoute->bindValue(":lineID", routeOptions.getLineID());
+    csrCheckRoute->bindValue(":routeID", routeOptions.getRouteID());
+    csrCheckRoute->exec();
+
+    if (csrCheckRoute->next() && csrCheckRoute->record().value("routedetailID").toInt() > routeOptions.getID())
+    {
+        result = true;
+        QString resultString = QString(QString::number(routeOptions.getLineID()) + "->" + QString::number(routeOptions.getRouteID()));
+        okMap.insert(routeOptions.getRouteID(), resultString);
+        routeList.insert(routeList.count(), line + resultString);
+    }
+
+    return result;
+}
+
 void Routes::findRoute(int przesiadki, RouteOptions &opt, QString line)
 {
+    QElapsedTimer t2;
+    t2.start();
     QMap<int, RouteOptions> allOptions;
+    int nextStopID = -1;
 
-    int searchForRouteDID = opt.getRouteDetailsID();
-    if (searchForRouteDID == -1)
+    if (opt.getRouteDetailsID() == -1)
     {
         return;
     }
 
-    frGetAllOptions->bindValue(":id", searchForRouteDID);
+    frGetNextStopID->bindValue(":id", opt.getRouteDetailsID());
+    frGetNextStopID->exec();
+    frGetNextStopID->next();
+    nextStopID = frGetNextStopID->record().value("stopID").toInt();
+
+    QElapsedTimer t3;
+    t3.start();
+    frGetAllOptions->bindValue(":stopID", nextStopID);
     frGetAllOptions->exec();
+
     int idColumn = frGetAllOptions->record().indexOf("id");
     int lineIDColumn = frGetAllOptions->record().indexOf("lineID");
     int routeIDColumn = frGetAllOptions->record().indexOf("routeID");
@@ -467,24 +505,24 @@ void Routes::findRoute(int przesiadki, RouteOptions &opt, QString line)
         foreach (int key, allOptions.keys())
         {
             RouteOptions object = allOptions.value(key);
-            if (object.getLineID() == rLineID && object.getRouteID() == rRouteID)
+            if (object.getLineID() == rLineID && object.getRouteID() == rRouteID && object.getID() < rID)
             {
-                if (object.getID() < rID)
-                {
-                    allOptions.remove(key);
-                    continue;
-                }
+                allOptions.remove(key);
+                continue;
             }
         }
 
         RouteOptions bOpt = RouteOptions(rID, rLineID, rRouteID, rRouteDetailsID, rStopID);
         allOptions.insert(rRouteDetailsID, bOpt);
     }
+    qDebug() << "Czas pobrania wszystkich opcji: " << t3.elapsed();
 
     foreach (int key, allOptions.keys())
     {
         RouteOptions tempOpt = allOptions.value(key);
 
+        QElapsedTimer t4;
+        t4.start();
         if (tempOpt.getLineID() != opt.getLineID())
         {
             if (tempOpt.getRouteDetailsID() == -1)
@@ -492,23 +530,27 @@ void Routes::findRoute(int przesiadki, RouteOptions &opt, QString line)
                 return;
             }
 
-            frCheckNextStop->bindValue(":lineID", opt.getLineID());
             frCheckNextStop->bindValue(":id", tempOpt.getRouteDetailsID());
             frCheckNextStop->bindValue(":routeID", opt.getRouteID());
             frCheckNextStop->exec();
             if (frCheckNextStop->next())
             {
                 allOptions.remove(key);
+                qDebug() << "Czas sprawdzenia czy autobusy jadą w tą samą stronę 1: " << t4.elapsed();
                 continue;
             }
+
+            qDebug() << "Czas sprawdzenia czy autobusy jadą w tą samą stronę 2: " << t4.elapsed();
         }
 
+        QElapsedTimer t5;
+        t5.start();
         if (opt.getLineID() != tempOpt.getLineID() ||
                 ((opt.getLineID() == tempOpt.getLineID()) && (opt.getRouteID() != tempOpt.getRouteID())))
         {
             if (opt.getLineID() == tempOpt.getLineID())
             {
-                allOptions.remove(key);
+//                allOptions.remove(key);
                 continue;
             }
 
@@ -519,8 +561,11 @@ void Routes::findRoute(int przesiadki, RouteOptions &opt, QString line)
                 mLine.append("; ");
                 mLine.append(QString::number(tempOpt.getStartID()));
                 mLine.append("; ");
-                findStraightRoute(tempOpt.getStartID(), endStopID, tempOpt.getLineID(),tempOpt.getRouteID(), mLine);
+
+                checkStraightRoute(tempOpt, mLine);
+
                 allOptions.remove(key);
+                qDebug() << "Czas sprawdzenia bezpośredniego: " << t5.elapsed();
                 continue;
             }
             else
@@ -536,14 +581,16 @@ void Routes::findRoute(int przesiadki, RouteOptions &opt, QString line)
             QString mLine(line);
             findRoute(przesiadki, tempOpt, mLine);
         }
-    }        
+    }
+
+    qDebug() << "Czas \"Find route\" :" << t2.elapsed();
 }
 
 void Routes::generateResult()
 {
     QString getRouteString("SELECT lines.number AS lineNumber, stops.name AS stopName"
-                        " FROM (routes INNER JOIN stops ON routes.stopID = stops.id) INNER JOIN"
-                        " lines ON routes.lineID = lines.id WHERE routes.id = :routeID AND routes.lineID = :lineID");
+                           " FROM (routes INNER JOIN stops ON routes.stopID = stops.id) INNER JOIN"
+                           " lines ON routes.lineID = lines.id WHERE routes.id = :routeID AND routes.lineID = :lineID");
     QSqlQuery getRouteQuery(RojaDatabase::getInstance()->getDatabase());
     getRouteQuery.prepare(getRouteString);
 
@@ -600,6 +647,7 @@ void Routes::generateResult()
         routesModel->addRoute(RoutesItem(routedetailsID, newLine, line));
     }
 
+    routesTitleBar->setProperty("text", "Znalezione trasy");
     routesBox->setProperty("page", "Route");
     routesBackButton->setProperty("visible", true);
     searchBox->setProperty("visible", false);
@@ -621,6 +669,7 @@ void Routes::routeRowClicked(int routeDetailsID, QString routeIDs, QString route
         {
             routesBox->setProperty("page", "TimetableB");
         }
+        routesTitleBar->setProperty("text", QString::fromUtf8("Rozkład"));
         searchResultsBox->setVisible(false);
         routesTimetable->setVisible(true);
     }
@@ -629,6 +678,7 @@ void Routes::routeRowClicked(int routeDetailsID, QString routeIDs, QString route
         getDetailRouteData(routeIDs, route);
 
         routesBox->setProperty("page", "DetailRoute");
+        routesTitleBar->setProperty("text", QString::fromUtf8("Szczegóły trasy"));
         searchResultsBox->setVisible(false);
         searchDetailResultsBox->setVisible(true);
     }
