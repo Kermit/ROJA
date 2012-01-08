@@ -19,13 +19,14 @@ Rectangle {
             page: stopsSection.page
         }
 
-        Rectangle {
+        Image {
             signal searchButtonClicked()
 
             id: stopSearchButton
             objectName: "stopSearchButton"
-            color: "red"
-            height: parent.height - 10
+            source: "qrc:/images/lupaIcon.png"
+            smooth: true
+            height: parent.height - 4
             width: height
             visible: true
             anchors.verticalCenter: parent.verticalCenter

@@ -12,7 +12,7 @@ Rectangle {
     TitleBar {
         id: routesTitleBar
         objectName: "routesTitleBar"
-        text: "Trasy"
+        text: "Wyszukiwanie tras"
 
         BackButton {
             objectName: "routesBackButton"
@@ -20,13 +20,14 @@ Rectangle {
             visible: false
         }
 
-        Rectangle {
+        Image {
             signal searchButtonClicked()
 
             id: chooseStopSearchButton
             objectName: "chooseStopSearchButton"
-            color: "red"
-            height: parent.height - 10
+            source: "qrc:/images/lupaIcon.png"
+            smooth: true
+            height: parent.height - 4
             width: height
             visible: false
             anchors.verticalCenter: parent.verticalCenter

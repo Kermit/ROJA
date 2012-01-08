@@ -6,7 +6,7 @@ Rectangle {
 
     id: titleBar
     width: parent.width
-    height: Math.round(parent.height * 0.1)
+    height: Math.round(parent.height * 0.12)
 
     Image {
         anchors.fill: parent
@@ -14,13 +14,25 @@ Rectangle {
         fillMode: Image.Tile
     }
 
-    Text {
-        id: titleBarText
-        text: parent.text
-        font.pointSize: textPointSize
-        font.bold: true
-        color: "#FFFFFF"
+    Item {
+        id: textBox
+
+        width: (parent.width - 2*parent.height) - 10
+        height: parent.height
         anchors.centerIn: parent
-        textFormat: Text.RichText
+
+        Text {
+            id: titleBarText
+
+            text: titleBar.text
+            font.pointSize: textPointSize
+            font.bold: true
+            color: "#FFFFFF"
+            textFormat: Text.RichText
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
+
+            anchors.centerIn: parent
+        }
     }
 }

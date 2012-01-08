@@ -83,7 +83,7 @@ Rectangle {
                 text: "Linie"
                 state: 'enable'
 
-                anchors.left: favButton.right
+                anchors.left: parent.left
             }
 
             Button {
