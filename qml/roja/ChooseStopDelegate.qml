@@ -37,7 +37,10 @@ Item {
         MouseArea {
             id: stopsDelegateMA
             anchors.fill: parent
-            onClicked: chooseStopList.indexChanged(stopName, stopID)
+            onClicked: {
+                chooseStopList.indexChanged(stopName, stopID);
+                chooseStopSearch.state = 'hide';                
+            }
         }
 
         states: State {
