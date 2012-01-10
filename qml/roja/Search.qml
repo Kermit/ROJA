@@ -49,17 +49,22 @@ Rectangle {
             font.pointSize: 11
             selectByMouse: true
             focus: search.inputFocus
+            inputMethodHints: Qt.ImhNoPredictiveText
             onFocusChanged: {
-                if (!focus) {
-                    input.closeSoftwareInputPanel()
-                }
+                if (!input.focus) {
+                    input.closeSoftwareInputPanel();
+                    text = ""
+                }                
             }
 
             anchors.centerIn: parent
-            onAccepted:
-            {
+            onTextChanged:  {
                 search.filter(text)
-                input.closeSoftwareInputPanel()
+            }
+
+            onAccepted:
+            {                
+                input.closeSoftwareInputPanel();
                 input.focus = false
             }
 
