@@ -83,7 +83,9 @@ Rectangle {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: startStop.clicked(true)
+                onClicked: {
+                    startStop.clicked(true)
+                }
             }
         }
 
@@ -112,7 +114,9 @@ Rectangle {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: endStop.clicked(false)
+                onClicked: {
+                    startStop.clicked(false)
+                }
             }
         }
 

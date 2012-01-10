@@ -251,7 +251,7 @@ void Routes::searchButtonClicked()
     else
     {
         communicateText->setVisible(true);
-        QTimer::singleShot(500, this, SLOT(startSearchNow()));
+        QTimer::singleShot(10, this, SLOT(startSearchNow()));
     }
 }
 
@@ -342,9 +342,6 @@ void Routes::prepareFindRouteQueries()
 
     frGetAllOptions = new QSqlQuery(RojaDatabase::getInstance()->getDatabase());
     frGetAllOptions->setForwardOnly(true);
-//    frGetAllOptions->prepare("SELECT id, lineID, routeID, routeDetailsID, stopID FROM routesdetails"
-//                             " WHERE stopID = (SELECT stopID FROM routesdetails WHERE id = :id)"
-//                             " ORDER BY id ASC");
     frGetAllOptions->prepare("SELECT id, lineID, routeID, routeDetailsID, stopID FROM routesdetails"
                              " WHERE stopID = :stopID");
 
