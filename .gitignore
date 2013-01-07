@@ -2,3 +2,8 @@ android/bin/*
 android/assets/*
 android/libs/*
 android/project.*
+android/gen/org/kermit/roja/roja/
+android/proguard-project.txt
+android/version.xml
+roja.pro.user
+roja.pro.user.2.5pre1
