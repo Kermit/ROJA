@@ -36,7 +36,7 @@ void Lines::init()
     viewer->rootContext()->setContextProperty("linesTimetableModel", timetable->getModel());
 
     linesLoader = viewer->rootObject()->findChild<QDeclarativeItem *>("linesLoader");
-    linesLoader->setProperty("source", "qml/roja/Lines.qml");
+    linesLoader->setProperty("source", "assets:/qml/roja/Lines.qml");
 
     linesSection = viewer->rootObject()->findChild<QDeclarativeItem *>("linesSection");
     linesTitleBar = viewer->rootObject()->findChild<QDeclarativeItem *>("linesTitleBar");
@@ -113,7 +113,7 @@ void Lines::lineRowClicked(int lineID, int routeID, QString lineNumber, QString 
     searchLine->setProperty("state", "hide");
     getStopsListData(lineID, routeID);
 
-    linesStopsLoader->setProperty("source", "qml/roja/LinesStops.qml");
+    linesStopsLoader->setProperty("source", "assets:/qml/roja/LinesStops.qml");
 
     linesSection->setProperty("page", "StopsList");
     backButton->setProperty("visible", true);   

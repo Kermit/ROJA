@@ -38,7 +38,7 @@ void Routes::init()
     viewer->rootContext()->setContextProperty("routesTimetableModel", timetable->getModel());
 
     routesLoader = viewer->rootObject()->findChild<QDeclarativeItem *>("routesLoader");
-    routesLoader->setProperty("source", "qml/roja/Routes.qml");
+    routesLoader->setProperty("source", "assets:/qml/roja/Routes.qml");
     communicateText = viewer->rootObject()->findChild<QDeclarativeItem *>("communicateText");
     routesTitleBar = viewer->rootObject()->findChild<QDeclarativeItem *>("routesTitleBar");
 

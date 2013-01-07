@@ -139,6 +139,9 @@ OTHER_FILES += \
     qtc_packaging/debian_fremantle/changelog
 }
 
+OTHER_FILES += \
+    android/version.xml
+
 
 
 

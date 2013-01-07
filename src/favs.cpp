@@ -5,7 +5,7 @@ Favs::Favs(QObject *parent, QmlApplicationViewer *applicationViewer) :
 {
     viewer = applicationViewer;
     favsLoader = viewer->rootObject()->findChild<QDeclarativeItem *>("favsLoader");
-    favsLoader->setProperty("source", "qml/roja/Favs.qml");
+    favsLoader->setProperty("source", "assets:/qml/roja/Favs.qml");
 }
 
 Favs::~Favs() {}

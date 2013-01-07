@@ -35,7 +35,7 @@ void Stops::init()
     viewer->rootContext()->setContextProperty("stopsLinesModel",  stopsLinesModel);
 
     stopsLoader = viewer->rootObject()->findChild<QDeclarativeItem *>("stopsLoader");
-    stopsLoader->setProperty("source", "qml/roja/Stops.qml");
+    stopsLoader->setProperty("source", "assets:/qml/roja/Stops.qml");
 
     stopsSection = viewer->rootObject()->findChild<QDeclarativeItem *>("stopsSection");
     stopsTitleBar = viewer->rootObject()->findChild<QDeclarativeItem *>("stopsTitleBar");
@@ -106,7 +106,7 @@ void Stops::stopClicked(QString stopName, int stopID)
     searchLine->setProperty("state", "hide");
     currentStop = stopName;
     getStopsLinesData(stopID);
-    stopsLinesLoader->setProperty("source", "qml/roja/StopsLines.qml");
+    stopsLinesLoader->setProperty("source", "assets:/qml/roja/StopsLines.qml");
 
     stopsSection->setProperty("page", "LinesList");
     backButton->setProperty("visible", true);
